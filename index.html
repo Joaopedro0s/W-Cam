@@ -32,20 +32,30 @@
       maxZoom: 19,
     }).addTo(map);
 
-    fetch("https://api-mural.onrender.com/") 
+    fetch("https://api-mural.onrender.com/photos") 
       .then(res => res.json())
       .then(data => {
+        if (data.length === 0) {
+          console.log("Não há imagens na API!");
+        }
         data.forEach(photo => {
+          // Criando ícone pequeno para o marcador
           const photoIcon = L.icon({
             iconUrl: photo.image_url,   
-            iconSize: [50, 50],
-            iconAnchor: [25, 50],
-            popupAnchor: [0, -50]
+            iconSize: [50, 50],       // marcador pequeno
+            iconAnchor: [25, 50],     // ponto que fica na coordenada
+            popupAnchor: [0, -50]     // posição do popup
           });
 
+          // Adiciona marcador ao mapa
           L.marker([photo.latitude, photo.longitude], { icon: photoIcon }) 
             .addTo(map)
-            .bindPopup(`<img src="${photo.image_url}" class="popup-img">`);
+            .bindPopup(`
+              <img src="${photo.image_url}" class="popup-img">
+              <p>ID: ${photo.id}</p>
+              <p>Latitude: ${photo.latitude}</p>
+              <p>Longitude: ${photo.longitude}</p>
+            `);
         });
       })
       .catch(err => console.error("Erro ao carregar fotos:", err));
