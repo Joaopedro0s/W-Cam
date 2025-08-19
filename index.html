@@ -25,23 +25,32 @@
   <div id="map"></div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script>
-    const map = L.map('map').setView([-22.7300, -45.1200], 14);
+ <script>
+const map = L.map('map').setView([-22.7300, -45.1200], 14);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-    }).addTo(map);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+}).addTo(map);
 
-    fetch("https://suaapi.com/photos") 
-      .then(res => res.json())
-      .then(data => {
-        data.forEach(photo => {
-          L.marker([photo.latitude, photo.longitude])
-            .addTo(map)
-            .bindPopup(`<img src="${photo.image_url}" class="popup-img">`);
-        });
-      })
-      .catch(err => console.error("Erro ao carregar fotos:", err));
-  </script>
+fetch("https://api-mural.onrender.com/recados") 
+  .then(res => res.json())
+  .then(data => {
+    data.forEach(photo => {
+      // Cria um ícone com a própria imagem
+      const photoIcon = L.icon({
+        iconUrl: photo.image_url,   // imagem do marker
+        iconSize: [50, 50],         // tamanho do marker
+        iconAnchor: [25, 50],       // ponto da imagem que fica na coordenada
+        popupAnchor: [0, -50]       // posição do popup relativo ao marker
+      });
+
+      L.marker([photo.latitude, photo.longitude], { icon: photoIcon })
+        .addTo(map)
+        .bindPopup(`<img src="${photo.image_url}" class="popup-img">`);
+    });
+  })
+  .catch(err => console.error("Erro ao carregar fotos:", err));
+</script>
+
 </body>
 </html>
