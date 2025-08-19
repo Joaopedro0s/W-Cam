@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>W-Cam - Mural Interativo Animado</title>
+  <title>W-Cam - Mural Interativo</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <link rel="icon" type="image/png" href="kkkk.png">
   <style>
@@ -27,11 +27,11 @@
       object-fit: cover;
       border: 2px solid #fff;
       box-shadow: 0 0 5px rgba(0,0,0,0.5);
-      transition: transform 0.2s ease; /* efeito suave */
+      transition: transform 0.2s ease;
     }
     .circle-icon:hover {
-      transform: scale(1.5); /* aumenta ao passar o mouse */
-      z-index: 1000;          /* garante que fique acima */
+      transform: scale(1.5);
+      z-index: 1000;
     }
   </style>
 </head>
@@ -46,7 +46,11 @@
       maxZoom: 19,
     }).addTo(map);
 
-    fetch("https://api-mural.onrender.com/photos")
+    // Proxy CORS para contornar bloqueio do navegador
+    const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+    const apiUrl = "https://api-mural.onrender.com/photos";
+
+    fetch(proxyUrl + apiUrl)
       .then(res => res.json())
       .then(data => {
         if (data.length === 0) {
@@ -54,10 +58,9 @@
         }
 
         data.forEach(photo => {
-          // Criar ícone circular com DivIcon
           const photoIcon = L.divIcon({
             html: `<img src="${photo.image_url}" class="circle-icon">`,
-            className: '', // remove estilo padrão do Leaflet
+            className: '',
             iconSize: [50, 50],
             iconAnchor: [25, 25],
           });
