@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>W-Cam</title>
+  <title>W-Cam - Mural Interativo Animado</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <link rel="icon" type="image/png" href="kkkk.png">
   <style>
@@ -19,6 +19,20 @@
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.4);
     }
+    /* Miniaturas circulares */
+    .circle-icon {
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border: 2px solid #fff;
+      box-shadow: 0 0 5px rgba(0,0,0,0.5);
+      transition: transform 0.2s ease; /* efeito suave */
+    }
+    .circle-icon:hover {
+      transform: scale(1.5); /* aumenta ao passar o mouse */
+      z-index: 1000;          /* garante que fique acima */
+    }
   </style>
 </head>
 <body>
@@ -26,29 +40,29 @@
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    const map = L.map('map').setView([-22.7300, -45.1200], 14);
+    const map = L.map('map').setView([-22.7300, -45.1200], 4);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
     }).addTo(map);
 
-    fetch("https://api-mural.onrender.com/photos") 
+    fetch("https://api-mural.onrender.com/photos")
       .then(res => res.json())
       .then(data => {
         if (data.length === 0) {
           console.log("Não há imagens na API!");
         }
+
         data.forEach(photo => {
-          // Criando ícone pequeno para o marcador
-          const photoIcon = L.icon({
-            iconUrl: photo.image_url,   
-            iconSize: [50, 50],       // marcador pequeno
-            iconAnchor: [25, 50],     // ponto que fica na coordenada
-            popupAnchor: [0, -50]     // posição do popup
+          // Criar ícone circular com DivIcon
+          const photoIcon = L.divIcon({
+            html: `<img src="${photo.image_url}" class="circle-icon">`,
+            className: '', // remove estilo padrão do Leaflet
+            iconSize: [50, 50],
+            iconAnchor: [25, 25],
           });
 
-          // Adiciona marcador ao mapa
-          L.marker([photo.latitude, photo.longitude], { icon: photoIcon }) 
+          L.marker([photo.latitude, photo.longitude], { icon: photoIcon })
             .addTo(map)
             .bindPopup(`
               <img src="${photo.image_url}" class="popup-img">
