@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Mapa de Fotos - Lorena</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+    .popup-img {
+      width: 200px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.4);
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([-22.7300, -45.1200], 14);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+    }).addTo(map);
+
+    fetch("https://suaapi.com/photos") 
+      .then(res => res.json())
+      .then(data => {
+        data.forEach(photo => {
+          L.marker([photo.latitude, photo.longitude])
+            .addTo(map)
+            .bindPopup(`<img src="${photo.image_url}" class="popup-img">`);
+        });
+      })
+      .catch(err => console.error("Erro ao carregar fotos:", err));
+  </script>
+</body>
+</html>
