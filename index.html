@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>W-Cam - Mural Interativo</title>
+  
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <link rel="icon" type="image/png" href="kkkk.png">
+  
   <style>
     body {
       margin: 0;
@@ -19,7 +21,6 @@
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.4);
     }
-    /* Miniaturas circulares */
     .circle-icon {
       border-radius: 50%;
       width: 50px;
@@ -39,24 +40,55 @@
   <div id="map"></div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  
   <script>
-    const map = L.map('map').setView([-22.7300, -45.1200], 15);
+    // Centraliza o mapa em Lorena-SP
+    const map = L.map('map').setView([-22.7300, -45.1200], 14);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
     }).addTo(map);
 
-    const proxyUrl = "https://api.allorigins.win/raw?url=";
+    // URL da API com proxy para evitar CORS
+    const proxyUrl = "https://api.allorigins.win/get?url=";
     const apiUrl = "https://api-mural.onrender.com/photos";
+
+    // Constante para o deslocamento. Ajuste este valor se necessário.
+    // 0.00005 é um bom valor para não sair do lugar original.
+    const DITHERING_FACTOR = 0.00005;
 
     fetch(proxyUrl + encodeURIComponent(apiUrl))
       .then(res => res.json())
-      .then(data => {
+      .then(result => {
+        const data = JSON.parse(result.contents);
         if (data.length === 0) {
           console.log("Não há imagens na API!");
+          return;
         }
 
+        // Mapeia a contagem de fotos por local para aplicar o deslocamento
+        const locationCount = {};
+
         data.forEach(photo => {
+          const locationKey = `${photo.latitude},${photo.longitude}`;
+          
+          // Inicializa a contagem para o local, se ainda não existir
+          if (!locationCount[locationKey]) {
+            locationCount[locationKey] = 0;
+          }
+
+          // Aumenta a contagem para a foto atual
+          locationCount[locationKey]++;
+          const index = locationCount[locationKey];
+
+          // Calcula o deslocamento.
+          // O valor é multiplicado pelo índice da foto no mesmo local
+          const jitterLat = (Math.random() - 0.5) * DITHERING_FACTOR * index;
+          const jitterLng = (Math.random() - 0.5) * DITHERING_FACTOR * index;
+          
+          const newLat = photo.latitude + jitterLat;
+          const newLng = photo.longitude + jitterLng;
+
           const photoIcon = L.divIcon({
             html: `<img src="${photo.image_url}" class="circle-icon">`,
             className: '',
@@ -64,7 +96,7 @@
             iconAnchor: [25, 25],
           });
 
-          L.marker([photo.latitude, photo.longitude], { icon: photoIcon })
+          L.marker([newLat, newLng], { icon: photoIcon })
             .addTo(map)
             .bindPopup(`
               <img src="${photo.image_url}" class="popup-img">
